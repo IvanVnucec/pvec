@@ -81,10 +81,10 @@ def main():
         print(f"Done. Found {len(articles)} article(s).")
         print(f"Scraping comments from every article.")
         tick = time()
-        for article,comments in zip(articles, executor.map(vecernji.get_comments, articles)):
+        for i,(article,comments) in enumerate(zip(articles, executor.map(vecernji.get_comments, articles)), start=1):
             url = article.lstrip('https://')
             length = len(comments) if comments != None else None
-            print(f"  {url}: {length}")
+            print(f"  {i:3}. {url}: {length}")
         tock = time()
         dt = tock - tick
         aps = len(articles) / dt
