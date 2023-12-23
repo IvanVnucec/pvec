@@ -108,6 +108,7 @@ def main():
         dt = tock - tick
         aps = len(articles) / dt
         print(f"Done. Scraped {len(articles)} article(s) in {dt:.2f} seconds ({aps:.2f} articles/sec).")
+        # TODO: save to database
         date -= datetime.timedelta(days=1)
         print()
 
