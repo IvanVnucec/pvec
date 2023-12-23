@@ -11,8 +11,7 @@ class Comment:
     reactions: list['Comment'] = None
 
     def __str__(self) -> str:
-        # TODO: format date to hh:mm dd.mm.yyyy
-        return f"{self.author} ({self.date}): '{self.content[:10]}'"
+        return f"{self.author} ({self.date.strftime('%H:%M %d.%m.%Y.')}): '{self.content[:10]}'"
 
 class Vecernji:
     def __init__(self):
