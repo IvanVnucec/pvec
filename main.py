@@ -66,7 +66,7 @@ def main():
     vecernji = Vecernji()
     date = datetime.datetime.today()
     print("Starting scraping.")
-    executor = concurrent.futures.ThreadPoolExecutor()
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
     print(f"Spawning {executor._max_workers} threads.")
     while True:
         # TODO: add break condition
@@ -78,7 +78,7 @@ def main():
         for article,comments in zip(articles, executor.map(vecernji.get_comments, articles)):
             url = article.lstrip('https://')
             length = len(comments) if comments != None else None
-            print(f"{url}: {length}")
+            print(f"  {url}: {length}")
         tock = time()
         dt = tock - tick
         aps = len(articles) / dt
