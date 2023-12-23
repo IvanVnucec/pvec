@@ -61,23 +61,28 @@ class Vecernji:
 
 def main():
     import concurrent.futures
+    from time import time
 
     vecernji = Vecernji()
     date = datetime.datetime.today()
     while True:
         # TODO: add break condition
-        # TODO: calculate articles/second metric
         print(f"Scraping for articles published {date.strftime('%d.%m.%Y')}.")
         articles = vecernji.get_articles_url(date=date)
         print(f"Done. Found {len(articles)} article(s).")
         # TODO: do not dispose of the executor with 'with', try map() instead
         # TODO: try with ProcessPoolExecutor and compare performance
+        tick = time()
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            print(f"Scraping for article comments by spawning {executor._max_workers} thread(s).")
+            print(f"Scraping for article comments with {executor._max_workers} thread(s).")
             for article,comments in zip(articles, executor.map(vecernji.get_comments, articles)):
                 url = article.lstrip('https://')
                 length = len(comments) if comments != None else None
                 print(f"{url}: {length}")
+        tock = time()
+        dt = tock - tick
+        aps = len(articles) / dt
+        print(f"Done. Scraped {len(articles)} article(s) in {dt:.2f} seconds ({aps:.2f} articles/sec).")
         date -= datetime.timedelta(days=1)
         print()
 
