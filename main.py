@@ -20,7 +20,7 @@ class Vecernji:
         response.raise_for_status()
         return response
 
-    def get_articles(self, date:datetime.datetime) -> list[str]:
+    def get_articles_url(self, date:datetime.datetime) -> list[str]:
         page = 1
         articles = []
         while True:
@@ -63,8 +63,8 @@ def main():
     vecernji = Vecernji()
     date = datetime.datetime.today()
     while True:
-        print(f"Scraping for articles published {date.strftime('%Y-%m-%d')}.")
-        articles = vecernji.get_articles(date=date)
+        print(f"Scraping for articles published {date.strftime('%d.%m.%Y')}.")
+        articles = vecernji.get_articles_url(date=date)
         print(f"Done. Found {len(articles)} article(s).")
         print("Scraping comments for each article.")
         for i,article in enumerate(articles, start=1):
