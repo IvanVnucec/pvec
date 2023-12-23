@@ -38,8 +38,8 @@ class Vecernji:
         return articles
 
     def get_comments(self, article_url:str) -> list[Comment]:
-        article = article_url.rsplit("/")[-1]
-        url = f"{self.base_url}/forum/{article}/komentari?order=-created_date"
+        # TODO: paginate
+        url = f"{article_url}/komentari?order=-created_date"
         try:
             response = self._http_get(url)
         except requests.exceptions.HTTPError as e:
@@ -60,17 +60,24 @@ class Vecernji:
         return comments
 
 def main():
+    import concurrent.futures
+
     vecernji = Vecernji()
     date = datetime.datetime.today()
     while True:
+        # TODO: add break condition
+        # TODO: calculate articles/second metric
         print(f"Scraping for articles published {date.strftime('%d.%m.%Y')}.")
         articles = vecernji.get_articles_url(date=date)
         print(f"Done. Found {len(articles)} article(s).")
-        print("Scraping comments for each article.")
-        for i,article in enumerate(articles, start=1):
-            print(f"  {i:3}. '{article[:60]}...':", end=" ", flush=True)
-            comments = vecernji.get_comments(article)
-            print(len(comments) if comments != None else None)
+        # TODO: do not dispose of the executor with 'with', try map() instead
+        # TODO: try with ProcessPoolExecutor and compare performance
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            print(f"Scraping for article comments by spawning {executor._max_workers} thread(s).")
+            for article,comments in zip(articles, executor.map(vecernji.get_comments, articles)):
+                url = article.lstrip('https://')
+                length = len(comments) if comments != None else None
+                print(f"{url}: {length}")
         date -= datetime.timedelta(days=1)
         print()
 
