@@ -70,12 +70,11 @@ def main():
     from time import time
 
     vecernji = Vecernji()
-    date = datetime.datetime.today()
     print("Starting scraping.")
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
     print(f"Spawning {executor._max_workers} threads.")
-    while True:
-        # TODO: add break condition
+    date = datetime.datetime.today()
+    while date > datetime.datetime(2000, 1, 1):
         print(f"Scraping for articles published {date.strftime('%d.%m.%Y')}.")
         articles = vecernji.get_articles_url(date=date)
         print(f"Done. Found {len(articles)} article(s).")
@@ -83,8 +82,7 @@ def main():
         tick = time()
         for i,(article,comments) in enumerate(zip(articles, executor.map(vecernji.get_comments, articles)), start=1):
             url = article.lstrip('https://')
-            length = len(comments) if comments != None else None
-            print(f"  {i:3}. {url}: {length}")
+            print(f"  {i:3}. {url}: {len(comments) if comments is not None else 'None'}")
         tock = time()
         dt = tock - tick
         aps = len(articles) / dt
