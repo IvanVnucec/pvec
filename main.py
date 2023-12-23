@@ -29,8 +29,8 @@ class Vecernji:
             soup = BeautifulSoup(response.text, "html.parser")
             card_items = soup.find_all("div", class_="card-group__item")
             articles += [f"{self.base_url}{item.find('a', class_='card__link')['href']}" for item in card_items]
-            is_last_page = soup.find("div", class_="author__pagination").find_all("a")[-1]["href"] == "#"
-            if is_last_page:
+            last_page = soup.find("div", class_="author__pagination").find_all("a")[-1]["href"] == "#"
+            if last_page:
                 break
             page += 1
         articles_length_scraped = int(soup.find("div", class_="article-stats__number").text)
@@ -38,25 +38,31 @@ class Vecernji:
         return articles
 
     def get_comments(self, article_url:str) -> list[Comment]:
-        # TODO: paginate
-        url = f"{article_url}/komentari?order=-created_date"
-        try:
-            response = self._http_get(url)
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
-                return None
-            else:
-                raise
-        soup = BeautifulSoup(response.text, "html.parser")
-        items = soup.find("div", class_="component__content").find_all("div", class_="card-group__item")
-        # TODO: also scrape replies
+        page = 1
         comments = []
-        for item in items:
-            comments.append(Comment(
+        while True:
+            url = f"{article_url}/komentari?order=-created_date&page={page}"
+            try:
+                response = self._http_get(url)
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 404:
+                    return None
+                else:
+                    raise
+            soup = BeautifulSoup(response.text, "html.parser")
+            items = soup.find("div", class_="component__content").find_all("div", class_="card-group__item")
+            # TODO: also scrape replies (and then add assert with scraped length)
+            new_comments = map(lambda item: Comment(
                 author=str(item.find("div", class_="comment-card__author-name").text).strip(),
                 date=datetime.datetime.strptime(str(item.find("div", class_="comment-card__time").text).strip(), "%H:%M %d.%m.%Y."),
                 content=str(item.find("div", class_="comment-card__text").p.text).strip(),
-            ))
+            ), items)
+            comments += list(new_comments)
+            pagination = soup.find("div", class_="author__pagination")
+            last_page = pagination == None or pagination.find_all("a")[-1]["href"] == "#"
+            if last_page:
+                break
+            page += 1
         return comments
 
 def main():
