@@ -13,7 +13,6 @@ class Comment:
 class Vecernji:
     def __init__(self):
         self.base_url = "https://www.vecernji.hr"
-        # TODO: see if we need a session (maybe faster without it)
         self.session = requests.Session()
 
     def _http_get(self, url:str) -> requests.Response:
@@ -67,7 +66,6 @@ def main():
     vecernji = Vecernji()
     date = datetime.datetime.today()
     print("Starting scraping.")
-    # TODO: try with ProcessPoolExecutor and compare performance
     executor = concurrent.futures.ThreadPoolExecutor()
     print(f"Spawning {executor._max_workers} threads.")
     while True:
