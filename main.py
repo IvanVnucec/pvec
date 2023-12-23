@@ -13,6 +13,7 @@ class Comment:
 class Vecernji:
     def __init__(self):
         self.base_url = "https://www.vecernji.hr"
+        # TODO: see if we need a session (maybe faster without it)
         self.session = requests.Session()
 
     def _http_get(self, url:str) -> requests.Response:
@@ -65,20 +66,21 @@ def main():
 
     vecernji = Vecernji()
     date = datetime.datetime.today()
+    print("Starting scraping.")
+    # TODO: try with ProcessPoolExecutor and compare performance
+    executor = concurrent.futures.ThreadPoolExecutor()
+    print(f"Spawning {executor._max_workers} threads.")
     while True:
         # TODO: add break condition
         print(f"Scraping for articles published {date.strftime('%d.%m.%Y')}.")
         articles = vecernji.get_articles_url(date=date)
         print(f"Done. Found {len(articles)} article(s).")
-        # TODO: do not dispose of the executor with 'with', try map() instead
-        # TODO: try with ProcessPoolExecutor and compare performance
+        print(f"Scraping comments from every article.")
         tick = time()
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            print(f"Scraping for article comments with {executor._max_workers} thread(s).")
-            for article,comments in zip(articles, executor.map(vecernji.get_comments, articles)):
-                url = article.lstrip('https://')
-                length = len(comments) if comments != None else None
-                print(f"{url}: {length}")
+        for article,comments in zip(articles, executor.map(vecernji.get_comments, articles)):
+            url = article.lstrip('https://')
+            length = len(comments) if comments != None else None
+            print(f"{url}: {length}")
         tock = time()
         dt = tock - tick
         aps = len(articles) / dt
