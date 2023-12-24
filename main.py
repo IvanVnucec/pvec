@@ -92,10 +92,12 @@ def main():
 
     vecernji = Vecernji()
     print("Starting scraping.")
+    # TODO: add 'with ThreadPoolExecutor as executor'
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
     print(f"Spawning {executor._max_workers} threads.")
     date = datetime.datetime.today()
-    while date > datetime.datetime(2000, 1, 1):
+    end_day = today - datetime.timedelta(days=1)
+    while date > end_day:
         print(f"Scraping for articles published {date.strftime('%d.%m.%Y')}.")
         articles = vecernji.get_articles_url(date=date)
         print(f"Done. Found {len(articles)} article(s).")
@@ -111,6 +113,7 @@ def main():
         # TODO: save to database
         date -= datetime.timedelta(days=1)
         print()
+    executor.shutdown()
 
 if __name__ == '__main__':
     main()
